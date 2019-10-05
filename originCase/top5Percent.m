@@ -24,7 +24,7 @@ function [topResult] = top5Percent(clientNum, read)
     end
     allPoint(1:index,6) = predict(Model_svm_gaussian, allPoint);
     for i = 1 : index
-        allPoint(i,7) =  fitnessY(allPoint(i,6), [0,0,0], allPoint(i,3:5));
+        allPoint(i,7) =  fitnessY(allPoint(i,6), [0,1,4], allPoint(i,3:5));
     end
     %topResult = allPoint;
     for i = 1 : index
