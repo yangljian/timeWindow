@@ -7,7 +7,7 @@ function result = randomTest(interval,initPoint)
     p = 1;
     count = getCount(interval,initPoint);
     workload  = [6.25,0.35;7.5,0.25;8.75,0.25;9.75,0.15;10,0.15;10.5,0.35];
-    pre = [0,2,5];
+    pre = [0,3,6];
     %计算单点最优初始fitness值
     fitness = getFitness(workload,[0,0,0],initPoint);
     while index <=6
