@@ -32,7 +32,7 @@ function [result] = psoTest()
            %2.如果迭代次数大于1了，则将计算出来的newFitness值与fitness比较，将小的fitness留下
            if(newFitness < fitness(i))
                fitness(i) = newFitness;
-               pBest(i,1:18) = x(i);
+               pBest(i,1:18) = x(i,1:18);
            end
         end
         %3.比较所有pBest，获取最优pBest，并将其作为gBest
@@ -41,10 +41,8 @@ function [result] = psoTest()
         
         %--更新--
         %1.根据更新公式计算新的v与x
-        disp(v);
         updateV();
-        disp(v);
-%         x = updateX();
+        updateX();
         %2.约束越界的点
         count = count + 1;
     end
@@ -86,11 +84,28 @@ function updateV()
     global gBest;
     count = 1;
     while count <= N
-        v(count,1:18) = round(0.5*v(count,1:18) + c1*unifrnd(0,1)*(pBest(count,1:18)-x(count,1:18)) + c2*unifrnd(0,1)*(gBest(1:18)-x(count,1:18)));
+        temp1 = unifrnd(0,1);
+        temp2 = unifrnd(0,1);
+        v(count,1:18) = 0.5*v(count,1:18) + c1*temp1*(pBest(count,1:18)-x(count,1:18)) + c2*temp2*(gBest(1:18)-x(count,1:18));
         count = count + 1;
     end
 end
 function updateX()
+    global x;
+    global v;
+    global N;
+    %更新位置值
+    x = x + v;
+    %边界约束，如果超出0-8范围，则需要调整
+    for i = 1 : N
+        for j = 1 : 18
+           if(x(i,j) < 0)
+               x(i,j) = 0;
+           elseif(x(i,j) > 8)
+               x(i,j) = 8;
+           end
+        end
+    end
 end
 
 function w = getW(gBest)
