@@ -1,3 +1,3 @@
 function [fitness] = getFitness(workload,pre,vmArrays)
-    fitness = 400 * getQos(workload,vmArrays) + getCost(pre,vmArrays)/6;
+    fitness = 500 * getQos(workload,vmArrays) + getCost(pre,vmArrays)/8;
 end

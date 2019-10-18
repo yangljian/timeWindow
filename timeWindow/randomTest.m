@@ -1,55 +1,37 @@
 % 单点最优附近指定区间计算fitness值
-function result = randomTest(interval,initPoint)
-    disp(initPoint);
-    betterPoints = [];
-    allPoints = [];
+%先进行随机法测试，在随机法内记录当前测试的workload与workload对应的单点最优值
+%pso传入与随机法相同的的workload进行实验
+%记录数据
+%interval:浮动区间，workloadNum:选取的负载点个数，pre:初始配置，isUpdate:是否重置workload进行下一轮实验
+function [result] = randomTest(interval,workloadNum,pre,isUpdate)
+    %判断是否更新负载点
+    updatePlan(isUpdate,workloadNum);
     index = 1;
     p = 1;
+    load("workload.mat");
+    load("initPoint.mat");
+    disp(initPoint);
     count = getCount(interval,initPoint);
-    workload  = [6.25,0.35;7.5,0.25;8.75,0.25;9.75,0.15;10,0.15;10.5,0.35];
-    pre = [0,2,5];
     %计算单点最优初始fitness值
-    fitness = getFitness(workload,[0,0,0],initPoint);
-    while index <=6
-%         flag1 = 0;
-        %flag2 = 0;
+    fitness = getFitness(workload,pre,initPoint);
+    savePlan(workload,initPoint,fitness,workloadNum,isUpdate);
+    t1 = clock;
+    t2 = clock;
+    while p < count && etime(t2,t1) < 180
+        
         %将initPoint的所有点移动±2
         temp = getNewPoints(interval,initPoint);
-        %allPoints(p,:) = temp;
         newFitness = getFitness(workload,pre,temp);
         if(newFitness < fitness)
             fitness = newFitness;
             betterPoints(index,1:18) = temp;
-            betterPoints(index,19) = fitness;
+            betterPoints(index,19) = newFitness;
             index = index + 1;
         end
          p = p + 1;
-%          for j = 1 : p
-%                %判断是否结果集中存在相同的方案
-%                if(isequal(allPoints(j,:),temp))
-%                    flag1 = 1;
-%                end
-%          end
-%             newFitness = getFitness(workload,pre,temp);
-%             if(newFitness < fitness)
-%                 fitness = newFitness;
-%                 betterPoints(index,1:18) = temp;
-%                 betterPoints(index,19) = newFitness;
-%                 index = index + 1;
-%             end
-%            if(~flag2)%如果该方案是新的，则计算其fitness值
-%                newFitness = getFitness(workload,pre,temp);
-%                if(newFitness < fitness)%将fitness值小于单点最优方案的方案存入结果集中
-%                    fitness = newFitness;
-%                    betterPoints(index,1:18) = temp;
-%                    betterPoints(index,19) = newFitness;
-%                    index = index + 1;
-%                end
-%            end
-%         end
-%      end
+         t2 = clock;
     end
-    
+    result = betterPoints;
 end
 
 function count = getCount(interval,initPoint)
@@ -75,4 +57,27 @@ function temp = getNewPoints(interval,temp)
             temp(i) = temp(i) + round(unifrnd(-interval,temp(i)));
         end
     end
+end
+
+function updatePlan(isUpdate,workloadNum)
+    if(isUpdate)
+        datas = load("initDatas.mat");
+        [workload,initPoint] = getWorkloadAndInitPoints(workloadNum,datas.initDatas);
+        save('workload.mat','workload');
+        save('initPoint.mat','initPoint');
+    end
+end
+
+function savePlan(workload,initPoint,fitness,workloadNum,flag)
+    if(flag)
+        onePointsPlan = zeros(7,5);
+        onePointsPlan(1:6,1:2) = workload;
+        for i = 1 : workloadNum
+            onePointsPlan(i,3:5) = initPoint(3*(i-1)+1:3*(i-1)+3);
+        end
+    else
+        load("onePointsPlan.mat");
+    end
+    onePointsPlan(7,5) = fitness;
+    save('onePointsPlan.mat','onePointsPlan');
 end

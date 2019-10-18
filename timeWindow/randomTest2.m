@@ -6,10 +6,10 @@ function result = randomTest(interval,initPoint)
     index = 1;
     p = 1;
     count = getCount(interval,initPoint);
-    workload  = [6.25,0.35;7.5,0.25;8.75,0.25;9.75,0.15;10,0.15;10.5,0.35];
-    pre = [0,3,6];
+    workload  = [8.75,0.25;6.25,0.35;11.25,0.25;7.5,0.25;5,0.35;10,0.15];
+    pre = [0,2,5];
     %计算单点最优初始fitness值
-    fitness = getFitness(workload,[0,0,0],initPoint);
+    fitness = getFitness(workload,[0,2,5],initPoint);
     while index <=6
 %         flag1 = 0;
         %flag2 = 0;
@@ -49,7 +49,7 @@ function result = randomTest(interval,initPoint)
 %         end
 %      end
     end
-    
+    result = betterPoints;
 end
 
 function count = getCount(interval,initPoint)
@@ -72,7 +72,7 @@ function temp = getNewPoints(interval,temp)
         elseif(temp(i) < interval)
             temp(i) = temp(i) + round(unifrnd(-temp(i),interval));
         elseif((8 - temp(i)) < interval)
-            temp(i) = temp(i) + round(unifrnd(-interval,temp(i)));
+            temp(i) = temp(i) + round(unifrnd(-interval,8 - temp(i)));
         end
     end
 end

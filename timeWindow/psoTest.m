@@ -1,5 +1,5 @@
-
-function [result] = psoTest()
+function [result,workload] = psoTest(pre)
+    t1=clock;
     global N;
     global c1;
     global c2;
@@ -8,6 +8,7 @@ function [result] = psoTest()
     global pBest;
     global gBest;
     global fitness;
+    global iter;
     N = 100;
     c1 = 2;
     c2 = 2;
@@ -16,38 +17,43 @@ function [result] = psoTest()
     gBest = [];
     fitness = [];
     initPopulation();
-    workload  = [11.25,0.25;12.5,0.25;13.75,0.35;15,0.15;16.25,0.45;17.5,0.15];
+    load('workload.mat');
     count = 1;
-    while count <= iter
+    t2=clock;
+    while count <= iter && etime(t2,t1) <= 180
         %--计算--
         %1.计算每个种群的fitness值
-        for i = 1:N
-           newFitness = getFitness(workload,[0,2,5],x(i,1:18));
-           %如果是第一次迭代，则直接初始化fitness数组与pBest数组
-           if(count == 1)
-               pBest(i,1:18) = x(i,1:18);
-               fitness(i) = newFitness;
-               continue;
-           end
-           %2.如果迭代次数大于1了，则将计算出来的newFitness值与fitness比较，将小的fitness留下
-           if(newFitness < fitness(i))
-               fitness(i) = newFitness;
-               pBest(i,1:18) = x(i,1:18);
-           end
+        if(count == 1)
+            %如果是第一次迭代，则直接初始化fitness数组与pBest数组
+            for i = 1:N
+                newFitness = getFitness(workload,pre,x(i,1:18));
+                pBest(i,1:18) = x(i,1:18);
+                fitness(i) = newFitness;
+            end
+        else
+            %2.如果迭代次数大于1了，则将计算出来的newFitness值与fitness比较，将小的fitness留下
+            for i = 1:N
+                newFitness = getFitness(workload,pre,x(i,1:18));
+                if(newFitness < fitness(i))
+                   fitness(i) = newFitness;
+                   pBest(i,1:18) = x(i,1:18);
+                end
+            end
         end
+        
         %3.比较所有pBest，获取最优pBest，并将其作为gBest
-        index = getBestPBest(fitness);
+        index = getBestPBest();
         gBest = pBest(index,:);
+        gBest(19) = fitness(index);
         
         %--更新--
         %1.根据更新公式计算新的v与x
-        updateV();
-        updateX();
-        %2.约束越界的点
+        updateVAndX();
         count = count + 1;
+        t2 = clock;
     end
     result = gBest;
-
+    
 end
 
 
@@ -57,13 +63,16 @@ function initPopulation()
     global v;
     global N;
     for i = 1 : N
-        x(i,1:18) = [round(unifrnd(0,8)),round(unifrnd(0,8)),round(unifrnd(0,8)),round(unifrnd(0,8)),round(unifrnd(0,8)),round(unifrnd(0,8)),round(unifrnd(0,8)),round(unifrnd(0,8)),round(unifrnd(0,8)),round(unifrnd(0,8)),round(unifrnd(0,8)),round(unifrnd(0,8)),round(unifrnd(0,8)),round(unifrnd(0,8)),round(unifrnd(0,8)),round(unifrnd(0,8)),round(unifrnd(0,8)),round(unifrnd(0,8))];
-        v(i,1:18) = [round(unifrnd(-8,8)),round(unifrnd(-8,8)),round(unifrnd(-8,8)),round(unifrnd(-8,8)),round(unifrnd(-8,8)),round(unifrnd(-8,8)),round(unifrnd(-8,8)),round(unifrnd(-8,8)),round(unifrnd(-8,8)),round(unifrnd(-8,8)),round(unifrnd(-8,8)),round(unifrnd(-8,8)),round(unifrnd(-8,8)),round(unifrnd(-8,8)),round(unifrnd(-8,8)),round(unifrnd(-8,8)),round(unifrnd(-8,8)),round(unifrnd(-8,8))];
+        for j = 1 : 18
+           x(i,j) = round(unifrnd(0,8));
+           v(i,j) = round(unifrnd(-8,8));
+        end
     end
 end
 
-function [index] = getBestPBest(fitness)
+function [index] = getBestPBest()
     global N;
+    global fitness;
     result = fitness(1);
     index = 1;
     for i = 1 : N-1
@@ -74,7 +83,7 @@ function [index] = getBestPBest(fitness)
     end
 end
 
-function updateV()
+function updateVAndX()
     global N;
     global c1;
     global c2;
@@ -84,31 +93,30 @@ function updateV()
     global gBest;
     count = 1;
     while count <= N
-        temp1 = unifrnd(0,1);
-        temp2 = unifrnd(0,1);
-        v(count,1:18) = 0.5*v(count,1:18) + c1*temp1*(pBest(count,1:18)-x(count,1:18)) + c2*temp2*(gBest(1:18)-x(count,1:18));
+        v(count,1:18) = round(0.5*v(count,1:18) + c1*unifrnd(0,1)*(pBest(count,1:18)-x(count,1:18)) + c2*unifrnd(0,1)*(gBest(1:18)-x(count,1:18)));
+        for i = 1 : 18
+           if(v(count,i) > 8)
+               v(count,i) = round(unifrnd(0,8));
+           elseif(v(count,i) < -8)
+               v(count,i) = round(unifrnd(-8,0));
+           end
+        end
         count = count + 1;
     end
-end
-function updateX()
-    global x;
-    global v;
-    global N;
     %更新位置值
     x = x + v;
     %边界约束，如果超出0-8范围，则需要调整
+  
     for i = 1 : N
         for j = 1 : 18
-           if(x(i,j) < 0)
-               x(i,j) = 0;
-           elseif(x(i,j) > 8)
-               x(i,j) = 8;
-           end
+            if(x(i,j) < 0 || x(i,j) > 8)
+               x(i,j) = round(unifrnd(0,8)); 
+            end
         end
     end
 end
 
-function w = getW(gBest)
-    
-end
-
+% 
+% function w = getW(gBest)
+%     
+% end
