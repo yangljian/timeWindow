@@ -30,7 +30,7 @@ function [result,workload] = psoTest(pre)
         gBest(19) = fitness(index);
         
         %--更新粒子速度与位置--
-        updateVAndX();
+        updateX();
         count = count + 1;
         t2 = clock;
     end
@@ -90,35 +90,6 @@ function [index] = getBestPBest()
     end
 end
 
-function updateVAndX()
-    global N;
-    global c1;
-    global c2;
-    global x;
-    global v;
-    global pBest;
-    global gBest;
-    count = 1;
-    while count <= N
-        v(count,1:18) = round(0.5*v(count,1:18) + c1*unifrnd(0,1)*(pBest(count,1:18)-x(count,1:18)) + c2*unifrnd(0,1)*(gBest(1:18)-x(count,1:18)));
-        for i = 1 : 18
-           if(v(count,i) > 8)
-               v(count,i) = round(unifrnd(0,8));
-           elseif(v(count,i) < -8)
-               v(count,i) = round(unifrnd(-8,0));
-           end
-        end
-        count = count + 1;
-    end
-    %更新位置值
-    x = x + v;
-    %边界约束，如果超出0-8范围，则需要调整
-  
-    for i = 1 : N
-        for j = 1 : 18
-            if(x(i,j) < 0 || x(i,j) > 8)
-               x(i,j) = round(unifrnd(0,8)); 
-            end
-        end
-    end
+function updateX()
+    
 end
