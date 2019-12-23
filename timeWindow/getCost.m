@@ -1,27 +1,35 @@
-function [result] = getCost(pre,vmArrays)
+%function [result] = getCost(pre,vmArrays)
+function [result] = getCost(vm)
 
-    costL = getCostL(vmArrays);%计算六种配置租赁虚拟机所消耗的CostL
+    costL = getCostL(vm);%计算六种配置租赁虚拟机所消耗的CostL
     
-	costD = getCostD(pre,vmArrays);%计算关闭虚拟机消耗的CostD
+	%costD = getCostD(pre,vmArrays);%计算关闭虚拟机消耗的CostD
     
-    result = costL + costD;
+    %result = costL + costD; 时间窗口步长为1h，可以忽略关闭虚拟机的消耗
+    result = costL;
 end
 
 %计算六种配置租赁虚拟机所消耗的CostL
-function [result] = getCostL(vmArrays)
-    small = 0;
-    middle = 0;
-    large = 0;
-    for i = 1 : 18
-       if(mod(i,3) == 1)
-           small = small + vmArrays(i);
-       elseif(mod(i,3) == 2)
-           middle = middle + vmArrays(i);
-       else
-           large = large + vmArrays(i);
-       end
-    end
-    result = 17.61*small + 18.85*middle + 20.84*large;
+% function [result] = getCostL(vmArrays)
+%     small = 0;
+%     middle = 0;
+%     large = 0;
+%     for i = 1 : 18
+%        if(mod(i,3) == 1)
+%            small = small + vmArrays(i);
+%        elseif(mod(i,3) == 2)
+%            middle = middle + vmArrays(i);
+%        else
+%            large = large + vmArrays(i);
+%        end
+%     end
+%     result = 17.61*small + 18.85*middle + 20.84*large;
+% end
+
+%计算一个虚拟机配置方案对应的CostL
+function [result] = getCostL(vm)
+    
+    result = 17.61*vm(1) + 18.85*vm(2) + 20.84*vm(3);
 end
 
 %计算关闭虚拟机消耗的CostD
