@@ -3,18 +3,15 @@
 %pso传入与随机法相同的的workload进行实验
 %记录数据
 %interval:浮动区间，workloadNum:选取的负载点个数，pre:初始配置，isUpdate:是否重置workload进行下一轮实验
-function [result] = randomTest(interval,workloadNum,pre,isUpdate)
-    %判断是否更新负载点
-    updatePlan(isUpdate,workloadNum);
+function [result] = randomTest(interval,workloadNum,pre,timeWindowIndex)
     index = 1;
     p = 1;
-    load("workload.mat");
-    load("initPoint.mat");
+    [workload,initPoint] = getWindowsData(timeWindowIndex);
     disp(initPoint);
     count = getCount(interval,initPoint);
     %计算单点最优初始fitness值
     fitness = getFitness(workload,pre,initPoint);
-    savePlan(workload,initPoint,fitness,workloadNum,isUpdate);
+%     savePlan(workload,initPoint,fitness,workloadNum);
     t1 = clock;
     t2 = clock;
     while p < count && etime(t2,t1) < 180
@@ -54,30 +51,17 @@ function temp = getNewPoints(interval,temp)
         elseif(temp(i) < interval)
             temp(i) = temp(i) + round(unifrnd(-temp(i),interval));
         elseif((8 - temp(i)) < interval)
-            temp(i) = temp(i) + round(unifrnd(-interval,temp(i)));
+            temp(i) = temp(i) + round(unifrnd(-interval,8-temp(i)));
         end
     end
 end
 
-function updatePlan(isUpdate,workloadNum)
-    if(isUpdate)
-        datas = load("initDatas.mat");
-        [workload,initPoint] = getWorkloadAndInitPoints(workloadNum,datas.initDatas);
-        save('workload.mat','workload');
-        save('initPoint.mat','initPoint');
-    end
-end
-
-function savePlan(workload,initPoint,fitness,workloadNum,flag)
-    if(flag)
-        onePointsPlan = zeros(7,5);
-        onePointsPlan(1:6,1:2) = workload;
-        for i = 1 : workloadNum
-            onePointsPlan(i,3:5) = initPoint(3*(i-1)+1:3*(i-1)+3);
-        end
-    else
-        load("onePointsPlan.mat");
-    end
-    onePointsPlan(7,5) = fitness;
-    save('onePointsPlan.mat','onePointsPlan');
-end
+% function savePlan(workload,initPoint,fitness,workloadNum)
+%     onePointsPlan = zeros(7,5);
+%     onePointsPlan(1:6,1:2) = workload;
+%     for i = 1 : workloadNum
+%         onePointsPlan(i,3:5) = initPoint(3*(i-1)+1:3*(i-1)+3);
+%     end
+%     onePointsPlan(7,5) = fitness;
+%     save('onePointsPlan.mat','onePointsPlan');
+% end
