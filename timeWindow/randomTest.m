@@ -6,11 +6,12 @@
 function [result] = randomTest(interval,workloadNum,pre,timeWindowIndex)
     index = 1;
     p = 1;
+    betterPoints = [];
     [workload,initPoint] = getWindowsData(timeWindowIndex);
     disp(initPoint);
     count = getCount(interval,initPoint);
     %计算单点最优初始fitness值
-    fitness = getFitness(workload,pre,initPoint);
+    fitness = getFitness(workload,initPoint);
 %     savePlan(workload,initPoint,fitness,workloadNum);
     t1 = clock;
     t2 = clock;
@@ -18,7 +19,7 @@ function [result] = randomTest(interval,workloadNum,pre,timeWindowIndex)
         
         %将initPoint的所有点移动±2
         temp = getNewPoints(interval,initPoint);
-        newFitness = getFitness(workload,pre,temp);
+        newFitness = getFitness(workload,temp);
         if(newFitness < fitness)
             fitness = newFitness;
             betterPoints(index,1:18) = temp;

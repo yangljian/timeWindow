@@ -19,7 +19,7 @@ function [result,workload] = pso_ga(pre,timeWindowIndex)
     count = 1;
     t1=clock;
     t2=clock;
-    while count <= iter && etime(t2,t1) <= 360
+    while count <= iter && etime(t2,t1) <= 180
         %--计算pbest与gbest--
         calPbestAndGbest(count,workload,pre);
         
@@ -58,14 +58,14 @@ function calPbestAndGbest(count,workload,pre)
         if(count == 1)
             %如果是第一次迭代，则直接初始化fitness数组与pBest数组
             for i = 1:N
-                newFitness = getFitness(workload,pre,x(i,1:18));
+                newFitness = getFitness(workload,x(i,1:18));
                 pBest(i,1:18) = x(i,1:18);
                 fitness(i) = newFitness;
             end
         else
             %2.如果迭代次数大于1了，则将计算出来的newFitness值与fitness比较，将小的fitness留下
             for i = 1:N
-                newFitness = getFitness(workload,pre,x(i,1:18));
+                newFitness = getFitness(workload,x(i,1:18));
                 if(newFitness < fitness(i))
                    fitness(i) = newFitness;
                    pBest(i,1:18) = x(i,1:18);
