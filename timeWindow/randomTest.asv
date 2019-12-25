@@ -7,8 +7,6 @@ function [betterPoints,betterOne,newPre] = randomTest(interval,workloadNum,pre,t
     index = 1;
     p = 1;
     betterPoints = [];
-    betterOne = [];
-    newPre = [];
     [workload,initPoint] = getWindowsData(timeWindowIndex);
     disp(initPoint);
     count = getCount(interval,initPoint);
@@ -24,15 +22,14 @@ function [betterPoints,betterOne,newPre] = randomTest(interval,workloadNum,pre,t
         newFitness = getFitness(workload,newPoints);
         if(newFitness < fitness)
             fitness = newFitness;
-            betterPoints(index,1:18) = newPoints;
+            betterPoints(index,1:18) = temp;
             betterPoints(index,19) = newFitness;
             index = index + 1;
         end
          p = p + 1;
          t2 = clock;
     end
-    [m,n] = size(betterPoints);
-    temp = betterPoints(m,1:3) - pre;
+    temp = betterPoints(1) - pre;
     temp(temp<0) = 0;
     betterOne = pre + temp;
     newPre = temp;

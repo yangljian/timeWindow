@@ -15,8 +15,9 @@ function [fitness] = getFitness(workloads,vmArrays)
             temp(temp < 0) = 0;
             calQoSVm = vmArrays(((i-1)*3)+1:((i-1)*3)+3) + temp;
             calCostVm = temp;
+            vmArrays((i*3)+1:(i*3)+3) = temp;
         end
-        fit = 450*getQos(workloads,calQoSVm) + getCost(calCostVm)/1.5;
+        fit = 450*getQos(workloads,calQoSVm) + 2.5*getCost(calCostVm);
         sum = sum + fit;
     end
     fitness = sum / 6;

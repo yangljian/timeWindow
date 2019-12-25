@@ -1,4 +1,4 @@
-function [result,workload] = pso_ga(pre,timeWindowIndex)
+function [betterOne,newPre] = pso_ga(pre,timeWindowIndex)
     
     global N;
     global c1;
@@ -33,7 +33,10 @@ function [result,workload] = pso_ga(pre,timeWindowIndex)
         count = count + 1;
         t2 = clock;
     end
-    result = gBest;
+    temp = gBest(1:3) - pre;
+    temp(temp<0) = 0;
+    betterOne = pre + temp;
+    newPre = temp;
 end
 
 %初始化种群，设初始种群大小为N
