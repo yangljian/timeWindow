@@ -37,6 +37,8 @@ function [betterOne,newPre] = pso_ga(pre,timeWindowIndex)
     temp(temp<0) = 0;
     betterOne = pre + temp;
     newPre = temp;
+    disp(newPre);
+    disp(betterOne);
 end
 
 %初始化种群，设初始种群大小为N
