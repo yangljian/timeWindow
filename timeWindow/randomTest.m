@@ -17,7 +17,7 @@ function [betterPoints,betterOne,newPre] = randomTest(interval,workloadNum,pre,t
 %     savePlan(workload,initPoint,fitness,workloadNum);
     t1 = clock;
     t2 = clock;
-    while p < count && etime(t2,t1) < 180
+    while p < count && etime(t2,t1) <= 180
         
         %将initPoint的所有点移动±2
         newPoints = getNewPoints(interval,initPoint);
@@ -36,6 +36,8 @@ function [betterPoints,betterOne,newPre] = randomTest(interval,workloadNum,pre,t
     temp(temp<0) = 0;
     betterOne = pre + temp;
     newPre = temp;
+    disp(newPre);
+    disp(betterOne);
 end
 
 function count = getCount(interval,initPoint)
