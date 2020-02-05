@@ -1,8 +1,5 @@
-function [result] = pso_ga(pre,timeWindowIndex)
-    
+function [result] = pso_ga2(t,length)
     global N;
-    global c1;
-    global c2;
     global pBest;
     global gBest;
     global fitness;
@@ -15,14 +12,14 @@ function [result] = pso_ga(pre,timeWindowIndex)
     %初始化种群
     initPopulation();
     %获取当前负载
-    [workload,initPoint] = getWindowsData(timeWindowIndex);
-    disp(initPoint);
+    [workload,windowPoint] = getWindowsData(t,length);
+    disp(windowPoint);
     count = 1;
     t1=clock;
     t2=clock;
     while count <= iter && etime(t2,t1) <= 180
         %--计算pbest与gbest--
-        calPbestAndGbest(count,workload,pre);
+        calPbest(count,workload,t);
         
         %--比较所有pBest，获取最优pBest，并将其作为gBest--
         index = getBestPBest();
@@ -34,45 +31,42 @@ function [result] = pso_ga(pre,timeWindowIndex)
         count = count + 1;
         t2 = clock;
     end
-    temp = gBest(1:3) - pre;
-    temp(temp<0) = 0;
-    betterOne = pre + temp
-    newPre = temp
     result = gBest;
-%     disp(newPre);
-%     disp(betterOne);
+%     temp = gBest(1:3) - pre;
+%     temp(temp<0) = 0;
+%     betterOne = pre + temp
+%     newPre = temp
+%     result = gBest;
 end
 
 %初始化种群，设初始种群大小为N
 function initPopulation()
     global x;
-    global v;
     global N;
     for i = 1 : N
         for j = 1 : 18
-           x(i,j) = round(unifrnd(0,8));
+           x(i,j) = round(unifrnd(0,4));
         end
     end
 end
 
-function calPbestAndGbest(count,workload,pre)
+function calPbest(count,workload,t)
     global N;
     global pBest;
-    global gBest;
     global x;
     global fitness;
     %1.计算每个种群的fitness值
         if(count == 1)
             %如果是第一次迭代，则直接初始化fitness数组与pBest数组
             for i = 1:N
-                newFitness = getFitness(workload,x(i,1:18));
+                newFitness = getFitness2(workload,x(i,1:18),t);
                 pBest(i,1:18) = x(i,1:18);
                 fitness(i) = newFitness;
             end
         else
             %2.如果迭代次数大于1了，则将计算出来的newFitness值与fitness比较，将小的fitness留下
             for i = 1:N
-                newFitness = getFitness(workload,x(i,1:18));
+                newFitness = getFitness2(workload,x(i,1:18),t);
                 if(newFitness < fitness(i))
                    fitness(i) = newFitness;
                    pBest(i,1:18) = x(i,1:18);
@@ -131,7 +125,7 @@ function mutates(flag)
     %随机选取粒子变异的一个分位
     index = randperm(6,1);
     %开始变异操作
-    x(flag,3*(index-1)+1:3*(index-1)+3) = [round(unifrnd(0,8)),round(unifrnd(0,8)),round(unifrnd(0,8))];
+    x(flag,3*(index-1)+1:3*(index-1)+3) = [round(unifrnd(0,4)),round(unifrnd(0,4)),round(unifrnd(0,4))];
 end
 
 %交叉操作
