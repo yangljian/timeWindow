@@ -1,10 +1,16 @@
-function [result] = pso_ga2(t,length)
+function pso_ga2(t)
+    addpath(genpath('E:\时间窗口实验\timeWindow\datas'));
+    addpath(genpath('E:\时间窗口实验\timeWindow\randomTest\util'));
+    load('E:\时间窗口实验\timeWindow\datas\psoGaPlan.mat','psoGaPlan');
+    load('E:\时间窗口实验\timeWindow\datas\psoGaAddPlan.mat','psoGaAddPlan');
+    global length;
     global N;
     global pBest;
     global gBest;
     global fitness;
     global iter;
-    N = 100;
+    length = 3;
+    N = 50;
     iter = 100;
     pBest = [];
     gBest = [];
@@ -13,66 +19,75 @@ function [result] = pso_ga2(t,length)
     initPopulation();
     %获取当前负载
     [workload,windowPoint] = getWindowsData(t,length);
-    disp(windowPoint);
+    disp(workload);
     count = 1;
     t1=clock;
     t2=clock;
-    while count <= iter && etime(t2,t1) <= 180
+    while count <= iter && etime(t2,t1) <= 60
         %--计算pbest与gbest--
-        calPbest(count,workload,t);
+        calPbest(count,workload,t,psoGaAddPlan);
         
         %--比较所有pBest，获取最优pBest，并将其作为gBest--
         index = getBestPBest();
         gBest = pBest(index,:);
-        gBest(19) = fitness(index);
+        gBest(length*3+1) = fitness(index);
         
         %--通过遗传算法中的交叉与变异操作更新粒子的位置--
         updateX();
         count = count + 1;
         t2 = clock;
     end
-    result = gBest;
-%     temp = gBest(1:3) - pre;
-%     temp(temp<0) = 0;
-%     betterOne = pre + temp
-%     newPre = temp
-%     result = gBest;
+    disp(gBest(length*3+1));
+    saveDatas(gBest,"psoGa",t);
 end
 
 %初始化种群，设初始种群大小为N
 function initPopulation()
     global x;
     global N;
+    global length;
+    %x = [];
     for i = 1 : N
-        for j = 1 : 18
-           x(i,j) = round(unifrnd(0,4));
+        for j = 1 : length*3
+%             if(mod(j,3) == 1)
+%                 x(i,j) = 0;
+%             else
+%                 x(i,j) = round(unifrnd(0,4));
+%             end
+            x(i,j) = round(unifrnd(0,4));
         end
     end
 end
 
-function calPbest(count,workload,t)
+function calPbest(count,workload,t,psoGaAddPlan)
     global N;
     global pBest;
     global x;
     global fitness;
+    global length;
+    size = length*3;
+%     t1 = clock;
     %1.计算每个种群的fitness值
         if(count == 1)
             %如果是第一次迭代，则直接初始化fitness数组与pBest数组
             for i = 1:N
-                newFitness = getFitness2(workload,x(i,1:18),t);
-                pBest(i,1:18) = x(i,1:18);
+                [newFitness,x(i,1:size)] = getPsoGaFitness(workload,x(i,1:size),t,psoGaAddPlan);
+                pBest(i,1:size) = x(i,1:size);
                 fitness(i) = newFitness;
             end
         else
             %2.如果迭代次数大于1了，则将计算出来的newFitness值与fitness比较，将小的fitness留下
             for i = 1:N
-                newFitness = getFitness2(workload,x(i,1:18),t);
+                [newFitness,x(i,1:size)] = getPsoGaFitness(workload,x(i,1:size),t,psoGaAddPlan);
                 if(newFitness < fitness(i))
                    fitness(i) = newFitness;
-                   pBest(i,1:18) = x(i,1:18);
+                   pBest(i,1:size) = x(i,1:size);
                 end
             end
         end
+%     t2 = clock;
+%     disp("calPBest");
+%     disp(t2-t1);
 end
 
 function [index] = getBestPBest()
@@ -95,6 +110,8 @@ function updateX()
     global w;
     global pBest;
     global gBest;
+    global length;
+    size = length*3;
     %初始化参数
     c1 = 0.5;
     c2 = 0.5;
@@ -103,7 +120,7 @@ function updateX()
     for i =1 : N
         %初始化三个随机数
        r1 = unifrnd(0,1);
-       r2 = unifrnd(0,1);
+       r2 = rand(1);
        r3 = unifrnd(0,1);
        if(r1 > w)
            %变异操作
@@ -111,29 +128,34 @@ function updateX()
        end
        if(r2 > c1)
            %交叉操作
-           crossover(i,pBest(i,1:18));
+           crossover(i,pBest(i,1:size));
        end
        if(r3 > c2)
            %交叉操作
-           crossover(i,gBest(1:18));
+           crossover(i,gBest(1:size));
        end
     end
 end
 %变异操作
 function mutates(flag)
+    var1 = round(unifrnd(0,4));
     global x;
+    global length;
+    var2 = round(unifrnd(0,4));
     %随机选取粒子变异的一个分位
-    index = randperm(6,1);
+    index = randperm(length,1);
+    var3 = round(unifrnd(0,4));
     %开始变异操作
-    x(flag,3*(index-1)+1:3*(index-1)+3) = [round(unifrnd(0,4)),round(unifrnd(0,4)),round(unifrnd(0,4))];
+    x(flag,3*(index-1)+1:3*(index-1)+3) = [var1,var2,var3];
 end
 
 %交叉操作
 function crossover(flag,point)
     global x;
+    global length;
     %确定交叉的两个位置
-    cp = randperm(6,2);
+    cp = randperm(length,2);
     %交叉操作
-    x(flag,3*(cp(1)-1)+1:3*(cp(1)-1)+3) = point(3*(cp(1)-1)+1:3*(cp(1)-1)+3);
-    x(flag,3*(cp(2)-1)+1:3*(cp(2)-1)+3) = point(3*(cp(2)-1)+1:3*(cp(2)-1)+3);
+    x(flag,3*(cp(1)-1)+2:3*(cp(1)-1)+3) = point(3*(cp(1)-1)+2:3*(cp(1)-1)+3);
+    x(flag,3*(cp(2)-1)+2:3*(cp(2)-1)+3) = point(3*(cp(2)-1)+2:3*(cp(2)-1)+3);
 end
