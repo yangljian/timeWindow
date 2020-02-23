@@ -10,7 +10,7 @@ function pso_ga2(t)
     global fitness;
     global iter;
     length = 3;
-    N = 50;
+    N = 10;
     iter = 100;
     pBest = [];
     gBest = [];
@@ -37,7 +37,6 @@ function pso_ga2(t)
         count = count + 1;
         t2 = clock;
     end
-    disp(gBest(length*3+1));
     saveDatas(gBest,"psoGa",t);
 end
 
@@ -66,28 +65,24 @@ function calPbest(count,workload,t,psoGaAddPlan)
     global fitness;
     global length;
     size = length*3;
-%     t1 = clock;
     %1.计算每个种群的fitness值
         if(count == 1)
             %如果是第一次迭代，则直接初始化fitness数组与pBest数组
             for i = 1:N
-                [newFitness,x(i,1:size)] = getPsoGaFitness(workload,x(i,1:size),t,psoGaAddPlan);
+                [newFitness,x(i,1:size)] = getTimeWindowFitness(workload,x(i,1:size),t,psoGaAddPlan);
                 pBest(i,1:size) = x(i,1:size);
                 fitness(i) = newFitness;
             end
         else
             %2.如果迭代次数大于1了，则将计算出来的newFitness值与fitness比较，将小的fitness留下
             for i = 1:N
-                [newFitness,x(i,1:size)] = getPsoGaFitness(workload,x(i,1:size),t,psoGaAddPlan);
+                [newFitness,x(i,1:size)] = getTimeWindowFitness(workload,x(i,1:size),t,psoGaAddPlan);
                 if(newFitness < fitness(i))
                    fitness(i) = newFitness;
                    pBest(i,1:size) = x(i,1:size);
                 end
             end
         end
-%     t2 = clock;
-%     disp("calPBest");
-%     disp(t2-t1);
 end
 
 function [index] = getBestPBest()
@@ -119,18 +114,16 @@ function updateX()
     %循环遍历所有粒子，进行变异交叉操作
     for i =1 : N
         %初始化三个随机数
-       r1 = unifrnd(0,1);
-       r2 = rand(1);
-       r3 = unifrnd(0,1);
-       if(r1 > w)
+       r = [unifrnd(0,1),unifrnd(0,1),unifrnd(0,1)];
+       if(r(1) > w)
            %变异操作
            mutates(i);
        end
-       if(r2 > c1)
+       if(r(2) > c1)
            %交叉操作
            crossover(i,pBest(i,1:size));
        end
-       if(r3 > c2)
+       if(r(3) > c2)
            %交叉操作
            crossover(i,gBest(1:size));
        end
@@ -138,15 +131,12 @@ function updateX()
 end
 %变异操作
 function mutates(flag)
-    var1 = round(unifrnd(0,4));
     global x;
     global length;
-    var2 = round(unifrnd(0,4));
     %随机选取粒子变异的一个分位
     index = randperm(length,1);
-    var3 = round(unifrnd(0,4));
     %开始变异操作
-    x(flag,3*(index-1)+1:3*(index-1)+3) = [var1,var2,var3];
+    x(flag,3*(index-1)+1:3*(index-1)+3) = [round(unifrnd(0,4)),round(unifrnd(0,4)),round(unifrnd(0,4))];
 end
 
 %交叉操作

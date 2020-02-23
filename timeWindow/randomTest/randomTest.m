@@ -21,16 +21,18 @@ function [betterAddPoints] = randomTest(interval,t)
     %计算随机方案的个数
     count = getCount(interval,addVMPlan);
     %根据增加虚拟机方案计算单点最优初始fitness值
-    [fitness,addVMPlan] = getRandomFitness(workload,addVMPlan,t,randomAddPlan);
+   
+    [fitness,addVMPlan] = getTimeWindowFitness(workload,addVMPlan,t,randomAddPlan);
+    
 %     savePlan(workload,initPoint,fitness,workloadNum);
     t1 = clock;
     t2 = clock;
-    while p < count && etime(t2,t1) <= 60
+    while (p < count && etime(t2,t1) <= 60) || isempty(betterAddPoints)
         
         %将initPoint的所有点移动±2
         newPoints = getNewPoints(interval,windowPoint);
         newAddVMPlan = getAddPlan(newPoints,length,t,randomAddPlan);
-        [newFitness,newPoints] = getRandomFitness(workload,newAddVMPlan,t,randomAddPlan);
+        [newFitness,newPoints] = getTimeWindowFitness(workload,newAddVMPlan,t,randomAddPlan);
         if(newFitness < fitness)
             fitness = newFitness;
             betterAddPoints(index,1:length*3) = newAddVMPlan;

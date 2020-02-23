@@ -1,7 +1,7 @@
-function [fitness,newAddVMArrays] = getPsoGaFitness(workloads,addVMArrays,t,psoGaAddPlan)
+function [fitness,newAddVMArrays] = getTimeWindowFitness(workloads,addVMArrays,t,addPlan)
     addpath(genpath('E:\时间窗口实验\timeWindow\randomTest\util')); 
     addpath(genpath('E:\时间窗口实验\timeWindow\function')); 
-    [vmArrays,newAddVMArrays] = getVmByAddVm(addVMArrays,t,psoGaAddPlan);
+    [vmArrays,newAddVMArrays] = getVmByAddVm(addVMArrays,t,addPlan);
     qos = getQoS(workloads,vmArrays);
     cost = getCost(addVMArrays);
     fitness = 900/qos + cost/6;
